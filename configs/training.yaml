@@ -1,0 +1,6 @@
+window: 20
+epochs: 10
+physics_loss: false
+use_magnetometer: false
+seed: 2026
+checkpoint: artifacts/checkpoints/temporal.pt

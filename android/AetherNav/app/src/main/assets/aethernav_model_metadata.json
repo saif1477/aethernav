@@ -1,0 +1,62 @@
+{
+  "model_name": "aethernav_temporal_dead_reckoner",
+  "model_version": "integration-test-0",
+  "status": "integration-test",
+  "is_trained": false,
+  "preprocessing_version": "imu-v1",
+  "input_names": [
+    "imu_window"
+  ],
+  "input_shape": [
+    1,
+    20,
+    6
+  ],
+  "input_dtype": "float32",
+  "sampling_rate_hz": 20,
+  "temporal_window_length": 20,
+  "feature_order": [
+    "accelerometer_x",
+    "accelerometer_y",
+    "accelerometer_z",
+    "gyroscope_x",
+    "gyroscope_y",
+    "gyroscope_z"
+  ],
+  "normalization_mean": [
+    0.0,
+    0.0,
+    9.80665,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "normalization_std": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "coordinate_convention": "local_enu",
+  "output_names": [
+    "motion_output"
+  ],
+  "output_shape": [
+    1,
+    6
+  ],
+  "output_dtype": "float32",
+  "output_units": [
+    "delta_east_m",
+    "delta_north_m",
+    "yaw_rate_correction_rad_s",
+    "log_variance_east",
+    "log_variance_north",
+    "log_variance_yaw"
+  ],
+  "uncertainty_representation": "log_variance",
+  "artifact_file": "aethernav_test.onnx",
+  "artifact_sha256": "0a1fa6139bbda8824321fe0cc254915d90e32339c2675e79739bedc6fdb717ea"
+}

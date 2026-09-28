@@ -1,0 +1,11 @@
+input: data/sample/demo.csv
+output_dir: artifacts/demo
+seed: 2026
+outage:
+  start_s: 10.0
+  end_s: 20.0
+  recovery_s: 2.0
+  noise_std_m: 0.0
+sequence_split:
+  train_fraction: 0.6
+  validation_fraction: 0.2
