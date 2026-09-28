@@ -16,11 +16,14 @@ jobs:
           java-version: '17'
           cache: gradle
       - uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: false
+      - name: Accept SDK Licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || yes | sdkmanager --licenses || true
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.7
           cache-cleanup: on-success
-      - run: yes | sdkmanager --licenses >/dev/null || true
       - run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
       - run: gradle testDebugUnitTest --no-daemon --stacktrace
       - run: gradle assembleDebug --no-daemon --stacktrace
