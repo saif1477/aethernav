@@ -29,8 +29,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AetherNavScreen(vm: NavigationViewModel = viewModel()) {
-    val frame by vm.frame.collectAsState(); val points by vm.historyPoints.collectAsState(); val modelStatus by vm.modelStatus.collectAsState(); val outage by vm.outage.collectAsState(); val running by vm.running.collectAsState(); val health by vm.health.collectAsState(); val metrics by vm.metrics.collectAsState(); val exported by vm.exported.collectAsState(); val context = androidx.compose.ui.platform.LocalContext.current
+fun AetherNavScreen() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val app = context.applicationContext as android.app.Application
+    val vm: NavigationViewModel = viewModel(factory = NavigationViewModel.provideFactory(app))
+    val frame by vm.frame.collectAsState(); val points by vm.historyPoints.collectAsState(); val modelStatus by vm.modelStatus.collectAsState(); val outage by vm.outage.collectAsState(); val running by vm.running.collectAsState(); val health by vm.health.collectAsState(); val metrics by vm.metrics.collectAsState(); val exported by vm.exported.collectAsState()
     MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFF00D5FF))) {
         Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("AetherNav", style = MaterialTheme.typography.headlineMedium); Text("EXPERIMENTAL ESTIMATE • local processing", color = Color(0xFFFFC857)); Text("Model: $modelStatus", style = MaterialTheme.typography.bodySmall)

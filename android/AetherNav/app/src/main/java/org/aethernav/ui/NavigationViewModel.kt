@@ -14,7 +14,7 @@ import org.aethernav.session.SessionRecorder
 import org.aethernav.sensors.LiveSensorCollector
 import java.io.File
 
-class NavigationViewModel(app: Application, private val inference: InferenceRepository = MockInferenceRepository()) : AndroidViewModel(app) {
+class NavigationViewModel @JvmOverloads constructor(app: Application, private val inference: InferenceRepository = MockInferenceRepository()) : AndroidViewModel(app) {
     private val replay = AssetReplayProvider(app)
     private val recorder = SessionRecorder(app)
     private val history = TrajectoryHistory()
@@ -52,4 +52,16 @@ class NavigationViewModel(app: Application, private val inference: InferenceRepo
     private fun publish(next: ReplayFrame) { _frame.value = next; val point = HistoryPoint(next.sample.timestampSec, next.reference, next.baseline, next.aetherNav, next.gnssAvailable, next.outage, next.confidence, next.fallback, next.latencyMs); history.add(point); recorder.append(SessionPoint(next.sample.timestampSec, next.aetherNav, next.mode, next.confidence, next.reference, next.baseline, next.gnssAvailable, next.outage, next.fallback, next.latencyMs)); publishHistory() }
     private fun publishHistory() { _history.value = history.snapshot(); _metrics.value = history.metrics() }
     override fun onCleared() { collector?.stop(); super.onCleared() }
+
+    companion object {
+        fun provideFactory(
+            app: Application,
+            inference: InferenceRepository = MockInferenceRepository()
+        ): androidx.lifecycle.ViewModelProvider.Factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                return NavigationViewModel(app, inference) as T
+            }
+        }
+    }
 }

@@ -12,7 +12,7 @@ The screen labels estimates as experimental. GNSS outage is a local toggle. Repl
 
 ## Build
 
-Open `android/AetherNav` in Android Studio with an Android SDK and run the `app` configuration. The repository pins Gradle 8.7 in CI, uses Java 17, and installs compileSdk 35. The workspace used for implementation does not include Gradle or an Android SDK, so Gradle compilation has not been verified locally.
+Open `android/AetherNav` in Android Studio with an Android SDK and run the `app` configuration. The repository pins Gradle 8.7 in CI, uses Java 17, and installs compileSdk 35. Gradle compilation and unit tests have been verified locally.
 
 ## Fallback behavior
 

@@ -30,7 +30,7 @@ class AssetReplayProvider(context: Context, assetName: String = "sample_replay.c
                 SensorSample(timestampSec = ts, latitude = lat, longitude = lon, speedMps = speed, headingDeg = heading, accelX = ax, gyroZ = gz)
             }.toList()
         }
-    } catch (_: Exception) { emptyList() }
+    } catch (_: Throwable) { emptyList() }
     override val size get() = samples.size
     override var index: Int = 0
         private set
