@@ -59,7 +59,7 @@ class NavigationViewModel @JvmOverloads constructor(app: Application, private va
             inference: InferenceRepository = MockInferenceRepository()
         ): androidx.lifecycle.ViewModelProvider.Factory = object : androidx.lifecycle.ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                 return NavigationViewModel(app, inference) as T
             }
         }
