@@ -27,16 +27,35 @@ class NavigationViewModel @JvmOverloads constructor(app: Application, private va
     private val _exported = MutableStateFlow<String?>(null); val exported = _exported.asStateFlow()
     private val _modelStatus = MutableStateFlow("mock-0 • integration-test • imu-v1"); val modelStatus: StateFlow<String> = _modelStatus.asStateFlow()
     private var collector: LiveSensorCollector? = null
+    private var replayJob: kotlinx.coroutines.Job? = null
 
     fun toggleOutage() { _outage.value = !_outage.value }
-    fun startReplay() { stopLive(); replay.reset(); history.clear(); recorder.clear(); publishHistory(); _running.value = true; stepReplay() }
-    fun reset() { _running.value = false; replay.reset(); history.clear(); recorder.clear(); _frame.value = null; publishHistory() }
+    fun startReplay() {
+        stopLive()
+        replayJob?.cancel()
+        replay.reset()
+        history.clear()
+        recorder.clear()
+        publishHistory()
+        _running.value = true
+        replayJob = viewModelScope.launch {
+            while (_running.value) {
+                val next = replay.next(_outage.value)
+                if (next == null) {
+                    _running.value = false
+                    break
+                }
+                publish(next)
+                kotlinx.coroutines.delay(150L)
+            }
+        }
+    }
+    fun reset() { pause(); stopLive(); replay.reset(); history.clear(); recorder.clear(); _frame.value = null; publishHistory() }
     fun stepReplay() {
-        if (!_running.value) return
         val next = replay.next(_outage.value) ?: run { _running.value = false; return }
         publish(next)
     }
-    fun pause() { _running.value = false }
+    fun pause() { _running.value = false; replayJob?.cancel(); replayJob = null }
     fun startLive() {
         stopLive(); collector = LiveSensorCollector(getApplication(), { sample ->
             viewModelScope.launch {
