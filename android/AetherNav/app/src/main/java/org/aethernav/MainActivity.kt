@@ -37,7 +37,12 @@ fun AetherNavScreen() {
     MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFF00D5FF))) {
         Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("AetherNav", style = MaterialTheme.typography.headlineMedium); Text("EXPERIMENTAL ESTIMATE • local processing", color = Color(0xFFFFC857)); Text("Model: $modelStatus", style = MaterialTheme.typography.bodySmall)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { Button(onClick = { vm.startReplay() }) { Text("Replay") }; Button(onClick = { vm.startLive() }) { Text("Live") }; Button(onClick = { vm.pause() }) { Text("Pause") }; OutlinedButton(onClick = { vm.reset() }) { Text("Reset") } }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Button(onClick = { vm.startReplay() }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 2.dp)) { Text("Replay", style = MaterialTheme.typography.labelSmall) }
+                Button(onClick = { vm.startLive() }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 2.dp)) { Text("Live", style = MaterialTheme.typography.labelSmall) }
+                Button(onClick = { vm.pause() }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 2.dp)) { Text("Pause", style = MaterialTheme.typography.labelSmall) }
+                OutlinedButton(onClick = { vm.reset() }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 2.dp)) { Text("Reset", style = MaterialTheme.typography.labelSmall) }
+            }
             Row { Text("GNSS outage", modifier = Modifier.weight(1f)); Switch(checked = outage, onCheckedChange = { vm.toggleOutage() }) }
             TrackCanvas(points, frame, Modifier.fillMaxWidth().height(230.dp))
             Legend()
@@ -46,7 +51,11 @@ fun AetherNavScreen() {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Metric("Speed", frame?.aetherNav?.speedMps?.let { String.format(java.util.Locale.US, "%.1f m/s", it) } ?: "—"); Metric("Heading", frame?.aetherNav?.headingDeg?.let { String.format(java.util.Locale.US, "%.1f°", it) } ?: "—"); Metric("Max error", metrics.maximumErrorM?.let { String.format(java.util.Locale.US, "%.1f m", it) } ?: "—") }
             Text("Outage ${String.format(java.util.Locale.US, "%.1f", metrics.outageDurationSec)}s • Recovery ${String.format(java.util.Locale.US, "%.1f", metrics.recoveryDurationSec)}s • Avg latency ${String.format(java.util.Locale.US, "%.1f", metrics.averageLatencyMs)}ms", style = MaterialTheme.typography.bodySmall)
             Text("Sensors: accel=${health.accelerometer} gyro=${health.gyroscope} mag=${health.magnetometer} GNSS=${health.gnss} rate=${String.format(java.util.Locale.US, "%.1f", health.sampleRateHz)}Hz gaps=${health.maxTimestampGapMs}ms dropped=${health.droppedSamples} magneticDisturbed=${health.magneticDisturbed}", style = MaterialTheme.typography.bodySmall)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { OutlinedButton(onClick = { vm.exportJson() }) { Text("JSON") }; OutlinedButton(onClick = { vm.exportCsv() }) { Text("CSV") }; OutlinedButton(onClick = { vm.exportJson().also { shareExport(context, it, "application/json") } }) { Text("Share") } }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                OutlinedButton(onClick = { vm.exportJson() }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 2.dp)) { Text("JSON", style = MaterialTheme.typography.labelSmall) }
+                OutlinedButton(onClick = { vm.exportCsv() }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 2.dp)) { Text("CSV", style = MaterialTheme.typography.labelSmall) }
+                OutlinedButton(onClick = { vm.exportJson().also { shareExport(context, it, "application/json") } }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 2.dp)) { Text("Share", style = MaterialTheme.typography.labelSmall) }
+            }
             exported?.let { Text("Saved locally: $it", style = MaterialTheme.typography.bodySmall) }
             if (running && frame != null) Button(onClick = { vm.stepReplay() }) { Text("Next replay sample") }
         }
