@@ -40,6 +40,8 @@ def canonicalize_frame(frame: pd.DataFrame) -> pd.DataFrame:
         "gyro_x": "gyroscope_x", "gyro_y": "gyroscope_y", "gyro_z": "gyroscope_z",
     }
     renamed = frame.rename(columns={c: aliases.get(str(c).strip().lower(), str(c).strip().lower()) for c in frame.columns})
+    if renamed.columns.duplicated().any():
+        renamed = renamed.loc[:, ~renamed.columns.duplicated()]
     if "timestamp" not in renamed:
         raise ValueError("Dataset must contain a timestamp column (accepted aliases: time, ts)")
     renamed["timestamp"] = pd.to_numeric(renamed["timestamp"], errors="coerce")

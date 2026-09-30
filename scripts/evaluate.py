@@ -42,16 +42,17 @@ for sequence_id in splits["test"]:
     baselines = {
         "gnss_only": gnss_only_trajectory(simulated, origin, wgs84_to_enu),
         "last_velocity": last_velocity_trajectory(simulated),
-        "naive_imu": np.column_stack((integrate_planar_inertial(sequence)[:, :2], np.zeros(len(sequence)))),
+        "naive_imu": np.column_stack((integrate_planar_inertial(simulated)[:, :2], np.zeros(len(simulated)))),
         "ekf": ekf_trajectory(simulated, origin, wgs84_to_enu),
     }
     outage_mask = ~simulated.gnss_available.to_numpy(bool)
+    outage_indices = np.flatnonzero(outage_mask)
     for name, estimate in baselines.items():
         estimate = np.asarray(estimate); errors = np.linalg.norm(estimate[:, :2] - reference[:, :2], axis=1)
         state_speed = estimate[:, 2] if estimate.shape[1] > 2 else None
         metrics = trajectory_metrics(reference, estimate, sequence.timestamp.to_numpy(), sequence.speed_mps, state_speed, sequence.heading_deg, None, outage_mask)
         metrics["relative_pose_error_m"] = relative_pose_error(reference, estimate)
-        metrics["outage_entry_jump_m"] = transition_jump(estimate, int(np.flatnonzero(outage_mask)[0]))
+        metrics["outage_entry_jump_m"] = transition_jump(estimate, int(outage_indices[0])) if len(outage_indices) else None
         recovery_indices = np.flatnonzero(simulated.gnss_degraded.to_numpy(bool)); metrics["recovery_entry_jump_m"] = transition_jump(estimate, int(recovery_indices[0])) if len(recovery_indices) else None
         metrics.update({"sequence_id": sequence_id, "model": name}); all_results.append(metrics)
         prefix = out_dir / f"{sequence_id}_{name}"; save_trajectory_plot(str(prefix) + "_trajectory.png", reference, estimate, sequence.timestamp.to_numpy(), outage_mask); save_error_plot(str(prefix) + "_error.png", errors, sequence.timestamp.to_numpy(), outage_mask)

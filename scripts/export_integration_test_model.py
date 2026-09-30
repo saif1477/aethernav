@@ -4,9 +4,14 @@ from __future__ import annotations
 from pathlib import Path
 import hashlib
 import json
-import sys
-import onnx
-from onnx import TensorProto, helper
+try:
+    import onnx
+    from onnx import TensorProto, helper
+except ImportError as exc:
+    print(f"Error: ONNX package is required for model export: {exc}")
+    print("Install optional dependencies using: pip install -e '.[ml]'")
+    sys.exit(1)
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from aethernav.models.contract import ModelContract
 

@@ -37,7 +37,8 @@ def last_velocity_trajectory(frame: pd.DataFrame) -> np.ndarray:
 def ekf_trajectory(frame: pd.DataFrame, reference_origin: tuple[float, float, float], enu_converter, process_var=0.8, measurement_var=9.0) -> np.ndarray:
     """Small planar EKF with acceleration/yaw-rate propagation and GNSS position updates."""
     t = frame.timestamp.to_numpy(float); n = len(frame); x = np.zeros(4); P = np.eye(4) * 1.0
-    imu = frame.accelerometer_x.to_numpy(float); gyro = frame.gyroscope_z.to_numpy(float)
+    imu = frame.accelerometer_x.to_numpy(float) if "accelerometer_x" in frame else np.zeros(len(frame))
+    gyro = frame.gyroscope_z.to_numpy(float) if "gyroscope_z" in frame else np.zeros(len(frame))
     gnss = gnss_only_trajectory(frame, reference_origin, enu_converter); available = frame.get("gnss_available", pd.Series(True, index=frame.index)).to_numpy(bool)
     out = np.zeros((n, 3));
     if "speed_mps" in frame and np.isfinite(frame.speed_mps.iloc[0]): x[2] = frame.speed_mps.iloc[0]

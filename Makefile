@@ -1,4 +1,4 @@
-.PHONY: sample test inspect plot evaluate install-ml validate-onnx export parity
+.PHONY: sample test inspect plot evaluate install-ml validate-onnx export parity docker-build docker-eval docker-test docker-api
 sample:
 	python scripts/create_sample_dataset.py --output data/sample/demo.csv
 test:
@@ -17,3 +17,12 @@ export:
 	python scripts/export_integration_test_model.py && python scripts/create_model_manifest.py
 parity:
 	python scripts/onnx_parity.py
+docker-build:
+	docker build -t aethernav:latest .
+docker-eval:
+	docker compose run --rm eval
+docker-test:
+	docker compose run --rm test
+docker-api:
+	docker compose up api
+

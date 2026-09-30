@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  eval:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aethernav:latest
+    container_name: aethernav-eval
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./data:/app/data
+    command: python scripts/evaluate.py --config configs/demo.yaml
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aethernav:latest
+    container_name: aethernav-test
+    command: pytest -v
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aethernav:latest
+    container_name: aethernav-api
+    ports:
+      - "8000:8000"
+    command: python -m uvicorn aethernav.api.server:app --host 0.0.0.0 --port 8000
