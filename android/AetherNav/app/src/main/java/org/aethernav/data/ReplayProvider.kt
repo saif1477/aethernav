@@ -15,12 +15,22 @@ interface ReplayProvider {
 
 /** Deterministic, offline provider. It never uses wall-clock time or a network. */
 class AssetReplayProvider(context: Context, assetName: String = "sample_replay.csv") : ReplayProvider {
-    private val samples: List<SensorSample> = context.assets.open(assetName).bufferedReader().use { reader ->
-        reader.lineSequence().drop(1).filter { it.isNotBlank() }.map { line ->
-            val p = line.split(','); require(p.size >= 7) { "Malformed replay row" }
-            SensorSample(timestampSec = p[0].toDouble(), latitude = p[1].toDouble(), longitude = p[2].toDouble(), speedMps = p[3].toDouble(), headingDeg = p[4].toDouble(), accelX = p[5].toDouble(), gyroZ = p[6].toDouble())
-        }.toList()
-    }
+    private val samples: List<SensorSample> = try {
+        context.assets.open(assetName).bufferedReader().use { reader ->
+            reader.lineSequence().drop(1).filter { it.isNotBlank() }.mapNotNull { line ->
+                val p = line.split(',').map { it.trim() }
+                if (p.size < 7) return@mapNotNull null
+                val ts = p[0].toDoubleOrNull() ?: return@mapNotNull null
+                val lat = p[1].toDoubleOrNull()
+                val lon = p[2].toDoubleOrNull()
+                val speed = p[3].toDoubleOrNull() ?: 0.0
+                val heading = p[4].toDoubleOrNull() ?: 0.0
+                val ax = p[5].toDoubleOrNull() ?: 0.0
+                val gz = p[6].toDoubleOrNull() ?: 0.0
+                SensorSample(timestampSec = ts, latitude = lat, longitude = lon, speedMps = speed, headingDeg = heading, accelX = ax, gyroZ = gz)
+            }.toList()
+        }
+    } catch (_: Exception) { emptyList() }
     override val size get() = samples.size
     override var index: Int = 0
         private set
@@ -29,12 +39,14 @@ class AssetReplayProvider(context: Context, assetName: String = "sample_replay.c
     override fun reset() { index = 0; lastPose = LocalPose(0.0, 0.0, 0.0, samples.firstOrNull()?.speedMps ?: 0.0) }
 
     override fun next(outageEnabled: Boolean): ReplayFrame? {
-        if (index >= samples.size) return null
+        if (index >= samples.size || samples.isEmpty()) return null
         val sample = samples[index]
-        val lat0 = samples.first().latitude ?: 0.0
-        val lon0 = samples.first().longitude ?: 0.0
-        val east = (sample.longitude!! - lon0) * 111320.0 * cos(Math.toRadians(lat0))
-        val north = (sample.latitude!! - lat0) * 111132.0
+        val lat0 = samples.firstOrNull()?.latitude ?: 0.0
+        val lon0 = samples.firstOrNull()?.longitude ?: 0.0
+        val sampleLat = sample.latitude ?: lat0
+        val sampleLon = sample.longitude ?: lon0
+        val east = (sampleLon - lon0) * 111320.0 * cos(Math.toRadians(lat0))
+        val north = (sampleLat - lat0) * 111132.0
         val reference = LocalPose(east, north, sample.headingDeg ?: 0.0, sample.speedMps ?: 0.0)
         val gnssAvailable = !outageEnabled
         val gnss = if (gnssAvailable) reference else null

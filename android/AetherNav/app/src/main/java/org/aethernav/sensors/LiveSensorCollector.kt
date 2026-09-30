@@ -26,7 +26,10 @@ class LiveSensorCollector(private val context: Context, private val onSample: (S
         if (a != null) sensorManager.registerListener(this, a, SensorManager.SENSOR_DELAY_GAME); if (g != null) sensorManager.registerListener(this, g, SensorManager.SENSOR_DELAY_GAME)
         if (m != null) { sensorManager.registerListener(this, m, SensorManager.SENSOR_DELAY_GAME); magnetic = true }
         val permission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        if (permission) locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100L, 0f, this)
+        val hasGps = try { locationManager.allProviders.contains(LocationManager.GPS_PROVIDER) } catch (_: Exception) { false }
+        if (permission && hasGps && try { locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) } catch (_: Exception) { false }) {
+            try { locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100L, 0f, this) } catch (_: Exception) { }
+        }
         onHealth(SensorHealth(a != null, g != null, magnetic, permission, permission))
     }
     fun stop() { sensorManager.unregisterListener(this); try { locationManager.removeUpdates(this) } catch (_: SecurityException) { } }

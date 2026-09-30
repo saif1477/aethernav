@@ -55,12 +55,12 @@ class LocalOnnxInferenceRepository(private val context: Context, private val ass
                 val confidence = exp(-((output[3] + output[4] + output[5]) / 3.0)).toFloat().coerceIn(0f, 1f)
                 InferenceResult(LocalPose(prior.eastM + output[0], prior.northM + output[1], prior.headingDeg + Math.toDegrees(output[2].toDouble()), prior.speedMps), confidence, elapsed(start), if (modelMetadata.isTrained) "ONNX trained" else "ONNX integration-test", false, modelMetadata.modelVersion, modelMetadata.modelName, modelMetadata.preprocessingVersion)
             }
-        } catch (_: Exception) { MockInferenceRepository().estimate(sample, previous, gnss).copy(mode = "ONNX inference fallback", fallback = true, modelVersion = "integration-test-0", latencyMs = elapsed(start)) }
+        } catch (_: Throwable) { MockInferenceRepository().estimate(sample, previous, gnss).copy(mode = "ONNX inference fallback", fallback = true, modelVersion = "integration-test-0", latencyMs = elapsed(start)) }
     }
     private fun elapsed(start: Long) = (System.nanoTime() - start) / 1_000_000L
     private fun ensureSession(): Boolean {
         if (session != null) return true; if (initError != null) return false
-        return try { val modelMetadata = metadata ?: ModelMetadata.load(context).also { metadata = it }; if (!ModelIntegrity.verify(context, assetName, modelMetadata.artifactSha256)) throw SecurityException("model hash mismatch or missing hash"); val env = OrtEnvironment.getEnvironment(); val bytes = context.assets.open(assetName).use { it.readBytes() }; environment = env; session = env.createSession(bytes, OrtSession.SessionOptions()); true } catch (e: Exception) { initError = e.message ?: "model load failed"; false }
+        return try { val modelMetadata = metadata ?: ModelMetadata.load(context).also { metadata = it }; if (!ModelIntegrity.verify(context, assetName, modelMetadata.artifactSha256)) throw SecurityException("model hash mismatch or missing hash"); val env = OrtEnvironment.getEnvironment(); val bytes = context.assets.open(assetName).use { it.readBytes() }; environment = env; session = env.createSession(bytes, OrtSession.SessionOptions()); true } catch (e: Throwable) { initError = e.message ?: "model load failed"; false }
     }
     fun reset() { window.clear() }
     override fun close() { session?.close(); session = null; environment = null; window.clear() }
